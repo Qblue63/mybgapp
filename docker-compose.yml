@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  db:
+    image: yavor63/mybgapp-db
+    networks:
+      - app-network
+    volumes:
+      - db_data:/var/lib/mysql
+    secrets:
+      - source: db_root_password
+        target: db_root_password
+    environment:
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  web:
+    image: yavor63/bgapp-web:latest
+    networks:
+      - app-network
+    ports:
+      - "80:80"
+    secrets:
+      - db_root_password
+    depends_on:
+      - db
+    deploy:
+      replicas: 3
+
+secrets:
+  db_root_password:
+    external: true
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+

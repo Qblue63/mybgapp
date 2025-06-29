@@ -24,30 +24,37 @@
           <td>София</td>
         </tr>
       </table>
-      <br />
-      <h1>Големи градове</h1>
-      <table>
-<?php
-   require_once ('config.php');
 
-   try {
-      $connection = new PDO("mysql:host={$host};dbname={$database};charset=utf8", $user, $password);
-      $query = $connection->query("SELECT city_name, population FROM cities ORDER BY population DESC");
-      $cities = $query->fetchAll();
+      <h2>Големи градове</h2>
+      <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+          <th>Град</th>
+          <th>Население</th>
+        </tr>
+        <?php
+        $host = 'db'; // име на контейнера в swarm
+        $user = 'web_user';
+        $password = trim(@file_get_contents('/run/secrets/db_root_password'));
+        $database = 'bulgaria';
 
-      if (empty($cities)) {
-         echo "<tr><td>Няма данни.</td></tr>\n";
-      } else {
-         foreach ($cities as $city) {
-            print "<tr><td>{$city['city_name']}</td><td align=\"right\">{$city['population']}</td></tr>\n";
-         }
-      }
-   }
-   catch (PDOException $e) {
-      print "<tr><td>Няма връзка към базата. Опитайте отново.</td></tr>\n";
-   }
-?>
+        $conn = new mysqli($host, $user, $password, $database);
+        if ($conn->connect_error) {
+            echo "<tr><td colspan='2'>Грешка при свързване с базата: " . htmlspecialchars($conn->connect_error) . "</td></tr>";
+        } else {
+            $sql = "SELECT city_name, population FROM cities ORDER BY population DESC";
+            $result = $conn->query($sql);
+            if ($result && $result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo "<tr><td>" . htmlspecialchars($row["city_name"]) . "</td><td>" . htmlspecialchars(number_format($row["population"], 0, '', ' ')) . "</td></tr>";
+                }
+            } else {
+                echo "<tr><td colspan='2'>Няма налични данни</td></tr>";
+            }
+            $conn->close();
+        }
+        ?>
       </table>
     </div>
   </body>
 </html>
+
