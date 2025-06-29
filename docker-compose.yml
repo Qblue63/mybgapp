@@ -17,7 +17,7 @@ services:
         constraints: [node.role == manager]
 
   web:
-    image: yavor63/bgapp-web:latest
+    image: yavor63/mybgapp-web
     networks:
       - app-network
     ports:
