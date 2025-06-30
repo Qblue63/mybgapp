@@ -1,6 +1,5 @@
 FROM alpine:3.18
 
-# Инсталираме nginx, php-fpm, php-mysqli и зависимости
 RUN apk add --no-cache \
     nginx \
     php81 \
@@ -12,21 +11,17 @@ RUN apk add --no-cache \
     php81-pdo_mysql \
     curl
 
-# Копираме конфигурация и уеб файлове
 COPY default.conf /etc/nginx/http.d/default.conf
 COPY index.php /var/www/localhost/htdocs/index.php
 COPY bulgaria-map.png /var/www/localhost/htdocs/bulgaria-map.png
 
-# Задаваме права и конфигурации
 RUN mkdir -p /run/nginx && \
     chown -R nginx:nginx /var/www/localhost/htdocs && \
     sed -i 's|^listen = .*|listen = 127.0.0.1:9000|' /etc/php81/php-fpm.d/www.conf && \
     sed -i 's|^user = .*|user = nginx|' /etc/php81/php-fpm.d/www.conf && \
     sed -i 's|^group = .*|group = nginx|' /etc/php81/php-fpm.d/www.conf
 
-# Експонираме порт 80
 EXPOSE 80
 
-# Стартов скрипт
 CMD php-fpm81 & nginx -g 'daemon off;'
 
